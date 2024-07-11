@@ -1,6 +1,7 @@
 package server
 
 import (
+	"encoding/json"
 	"fmt"
 	"log/slog"
 	"strings"
@@ -65,6 +66,39 @@ func Prompt(tmpl, system, prompt, response string, generate bool) (string, error
 		"System":   system,
 		"Prompt":   prompt,
 		"Response": response,
+	}
+
+	var sb strings.Builder
+	if err := parsed.Execute(&sb, vars); err != nil {
+		return "", err
+	}
+
+	return sb.String(), nil
+}
+
+// FunctionPrompt renders a functions list from a template.
+func FunctionPrompt(tmpl string, functionsList []map[string]interface{}) (string, error) {
+	// template functions
+	funcMap := template.FuncMap{
+		// marshal interface to json string
+		"tojson": func(v interface{}) string {
+			j, _ := json.Marshal(v)
+			return string(j)
+		},
+		// marshal interface to indented json string
+		"tojsoni": func(prefix string, indent string, v interface{}) string {
+			j, _ := json.MarshalIndent(v, prefix, indent)
+			return string(j)
+		},
+	}
+
+	parsed, err := template.New("").Option("missingkey=zero").Funcs(funcMap).Parse(tmpl)
+	if err != nil {
+		return "", err
+	}
+
+	vars := map[string]any{
+		"Functions": functionsList,
 	}
 
 	var sb strings.Builder

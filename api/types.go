@@ -51,6 +51,9 @@ type GenerateRequest struct {
 	// System overrides the model's default system message/prompt.
 	System string `json:"system"`
 
+	// Function message/prompt
+	Function string `json:"functiontmpl"`
+
 	// Template overrides the model's default prompt template.
 	Template string `json:"template"`
 
@@ -100,6 +103,9 @@ type ChatRequest struct {
 
 	// Options lists model-specific options.
 	Options map[string]interface{} `json:"options"`
+
+	// Callable Functions
+	Functions []map[string]interface{} `json:"functions,omitempty"`
 }
 
 // Message is a single message in a chat sequence. The message contains the
@@ -220,9 +226,10 @@ type DeleteRequest struct {
 
 // ShowRequest is the request passed to [Client.Show].
 type ShowRequest struct {
-	Model    string `json:"model"`
-	System   string `json:"system"`
-	Template string `json:"template"`
+	Model        string `json:"model"`
+	System       string `json:"system"`
+	FunctionTmpl string `json:"functiontmpl"`
+	Template     string `json:"template"`
 
 	Options map[string]interface{} `json:"options"`
 
@@ -232,13 +239,14 @@ type ShowRequest struct {
 
 // ShowResponse is the response returned from [Client.Show].
 type ShowResponse struct {
-	License    string       `json:"license,omitempty"`
-	Modelfile  string       `json:"modelfile,omitempty"`
-	Parameters string       `json:"parameters,omitempty"`
-	Template   string       `json:"template,omitempty"`
-	System     string       `json:"system,omitempty"`
-	Details    ModelDetails `json:"details,omitempty"`
-	Messages   []Message    `json:"messages,omitempty"`
+	License      string       `json:"license,omitempty"`
+	Modelfile    string       `json:"modelfile,omitempty"`
+	Parameters   string       `json:"parameters,omitempty"`
+	Template     string       `json:"template,omitempty"`
+	System       string       `json:"system,omitempty"`
+	FunctionTmpl string       `json:"functiontmpl,omitempty"`
+	Details      ModelDetails `json:"details,omitempty"`
+	Messages     []Message    `json:"messages,omitempty"`
 }
 
 // CopyRequest is the request passed to [Client.Copy].

@@ -680,17 +680,24 @@ func GetModelInfo(req api.ShowRequest) (*api.ShowResponse, error) {
 		model.Template = req.Template
 	}
 
+	if req.FunctionTmpl != "" {
+		model.FunctionTmpl = req.FunctionTmpl
+	}
+
+	fmt.Println(req.FunctionTmpl)
+
 	msgs := make([]api.Message, 0)
 	for _, msg := range model.Messages {
 		msgs = append(msgs, api.Message{Role: msg.Role, Content: msg.Content})
 	}
 
 	resp := &api.ShowResponse{
-		License:  strings.Join(model.License, "\n"),
-		System:   model.System,
-		Template: model.Template,
-		Details:  modelDetails,
-		Messages: msgs,
+		License:      strings.Join(model.License, "\n"),
+		System:       model.System,
+		FunctionTmpl: model.FunctionTmpl,
+		Template:     model.Template,
+		Details:      modelDetails,
+		Messages:     msgs,
 	}
 
 	var params []string
@@ -1265,6 +1272,18 @@ func (s *Server) ChatHandler(c *gin.Context) {
 			},
 		}, req.Messages...)
 	}
+
+	// if functions json is provided, then format and append to system prompt using model's function format
+	if req.Functions != nil {
+		functionPromptString, err := FunctionPrompt(model.FunctionTmpl, req.Functions)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		// unescape quotes
+		req.Messages[0].Content += "\n\n" + functionPromptString
+	}
+	fmt.Println(req.Messages[0].Content)
 
 	prompt, err := chatPrompt(c.Request.Context(), runner, model.Template, req.Messages, opts.NumCtx)
 	if err != nil {

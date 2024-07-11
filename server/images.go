@@ -50,6 +50,7 @@ type Model struct {
 	AdapterPaths   []string
 	ProjectorPaths []string
 	Template       string
+	FunctionTmpl   string
 	System         string
 	License        []string
 	Digest         string
@@ -94,6 +95,13 @@ func (m *Model) String() string {
 		modelfile.Commands = append(modelfile.Commands, parser.Command{
 			Name: "system",
 			Args: m.System,
+		})
+	}
+
+	if m.FunctionTmpl != "" {
+		modelfile.Commands = append(modelfile.Commands, parser.Command{
+			Name: "functiontmpl",
+			Args: m.FunctionTmpl,
 		})
 	}
 
@@ -250,6 +258,13 @@ func GetModel(name string) (*Model, error) {
 			}
 
 			model.System = string(bts)
+		case "application/vnd.ollama.image.functiontmpl":
+			bts, err := os.ReadFile(filename)
+			if err != nil {
+				return nil, err
+			}
+
+			model.FunctionTmpl = string(bts)
 		case "application/vnd.ollama.image.prompt":
 			bts, err := os.ReadFile(filename)
 			if err != nil {
@@ -454,7 +469,7 @@ func CreateModel(ctx context.Context, name model.Name, modelFileDir, quantizatio
 
 				layers = append(layers, baseLayer.Layer)
 			}
-		case "license", "template", "system":
+		case "license", "template", "system", "functiontmpl":
 			if c.Name != "license" {
 				// replace
 				layers = slices.DeleteFunc(layers, func(layer *Layer) bool {

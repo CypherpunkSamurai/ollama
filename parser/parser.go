@@ -34,7 +34,7 @@ func (c Command) String() string {
 	switch c.Name {
 	case "model":
 		fmt.Fprintf(&sb, "FROM %s", c.Args)
-	case "license", "template", "system", "adapter":
+	case "license", "template", "system", "adapter", "functiontmpl":
 		fmt.Fprintf(&sb, "%s %s", strings.ToUpper(c.Name), quote(c.Args))
 	case "message":
 		role, message, _ := strings.Cut(c.Args, ": ")
@@ -114,6 +114,7 @@ func ParseFile(r io.Reader) (*File, error) {
 		if next != curr {
 			switch curr {
 			case stateName:
+				fmt.Println(cmd.Name, ": ", stateParameter)
 				if !isValidCommand(b.String()) {
 					return nil, errInvalidCommand
 				}
@@ -319,7 +320,7 @@ func isValidMessageRole(role string) bool {
 
 func isValidCommand(cmd string) bool {
 	switch strings.ToLower(cmd) {
-	case "from", "license", "template", "system", "adapter", "parameter", "message":
+	case "from", "license", "template", "system", "adapter", "parameter", "message", "functiontmpl":
 		return true
 	default:
 		return false

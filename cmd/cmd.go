@@ -588,8 +588,9 @@ func ShowHandler(cmd *cobra.Command, args []string) error {
 	parameters, errParams := cmd.Flags().GetBool("parameters")
 	system, errSystem := cmd.Flags().GetBool("system")
 	template, errTemplate := cmd.Flags().GetBool("template")
+	functionTmpl, errFunctionTmpl := cmd.Flags().GetBool("functiontmpl")
 
-	for _, boolErr := range []error{errLicense, errModelfile, errParams, errSystem, errTemplate} {
+	for _, boolErr := range []error{errLicense, errModelfile, errParams, errSystem, errTemplate, errFunctionTmpl} {
 		if boolErr != nil {
 			return errors.New("error retrieving flags")
 		}
@@ -623,10 +624,15 @@ func ShowHandler(cmd *cobra.Command, args []string) error {
 		showType = "template"
 	}
 
+	if functionTmpl {
+		flagsSet++
+		showType = "functiontmpl"
+	}
+
 	if flagsSet > 1 {
-		return errors.New("only one of '--license', '--modelfile', '--parameters', '--system', or '--template' can be specified")
+		return errors.New("only one of '--license', '--modelfile', '--parameters', '--system', or '--template', or '--functiontmpl' can be specified")
 	} else if flagsSet == 0 {
-		return errors.New("one of '--license', '--modelfile', '--parameters', '--system', or '--template' must be specified")
+		return errors.New("one of '--license', '--modelfile', '--parameters', '--system', or '--template', or '--functiontmpl' must be specified")
 	}
 
 	req := api.ShowRequest{Name: args[0]}
@@ -646,6 +652,8 @@ func ShowHandler(cmd *cobra.Command, args []string) error {
 		fmt.Println(resp.System)
 	case "template":
 		fmt.Println(resp.Template)
+	case "functiontmpl":
+		fmt.Println(resp.FunctionTmpl)
 	}
 
 	return nil
@@ -1132,6 +1140,7 @@ func NewCLI() *cobra.Command {
 	showCmd.Flags().Bool("parameters", false, "Show parameters of a model")
 	showCmd.Flags().Bool("template", false, "Show template of a model")
 	showCmd.Flags().Bool("system", false, "Show system message of a model")
+	showCmd.Flags().Bool("functiontmpl", false, "Show function prompt of a model")
 
 	runCmd := &cobra.Command{
 		Use:     "run MODEL [PROMPT]",
